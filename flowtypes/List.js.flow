@@ -44,6 +44,7 @@ declare interface IListProps<Value> {
     index: number
   }) => mixed;
   transitionDuration?: number;
+  maxSpeed?: number;
   removableByMove?: boolean;
   lockVertically?: boolean;
   voiceover?: IVoiceover;

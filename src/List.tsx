@@ -104,6 +104,7 @@ class List<Value = string> extends React.Component<IProps<Value>> {
 
   static defaultProps = {
     transitionDuration: 300,
+    maxSpeed: Infinity,
     lockVertically: false,
     removableByMove: false,
     voiceover: {
@@ -284,17 +285,23 @@ class List<Value = string> extends React.Component<IProps<Value>> {
       viewportHeight - clientY < AUTOSCROLL_ACTIVE_OFFSET
     ) {
       this.setState({
-        scrollingSpeed: Math.round(
-          (AUTOSCROLL_ACTIVE_OFFSET - (viewportHeight - clientY)) /
-            AUTOSCROLL_SPEED_RATIO
+        scrollingSpeed: Math.min(
+          Math.round(
+            (AUTOSCROLL_ACTIVE_OFFSET - (viewportHeight - clientY)) /
+              AUTOSCROLL_SPEED_RATIO,
+          ),
+          this.props.maxSpeed,
         ),
         scrollWindow: true
       });
       // autoscrolling for the window (up)
     } else if (top < 0 && clientY < AUTOSCROLL_ACTIVE_OFFSET) {
       this.setState({
-        scrollingSpeed: Math.round(
-          (AUTOSCROLL_ACTIVE_OFFSET - clientY) / -AUTOSCROLL_SPEED_RATIO
+        scrollingSpeed: Math.max(
+          Math.round(
+            (AUTOSCROLL_ACTIVE_OFFSET - clientY) / -AUTOSCROLL_SPEED_RATIO
+          ),
+          -this.props.maxSpeed
         ),
         scrollWindow: true
       });
@@ -306,14 +313,20 @@ class List<Value = string> extends React.Component<IProps<Value>> {
       if (height + 20 < this.listRef.current!.scrollHeight) {
         let scrollingSpeed = 0;
         if (clientY - top < AUTOSCROLL_ACTIVE_OFFSET) {
-          scrollingSpeed = Math.round(
-            (AUTOSCROLL_ACTIVE_OFFSET - (clientY - top)) /
-              -AUTOSCROLL_SPEED_RATIO
+          scrollingSpeed = Math.max(
+            Math.round(
+              (AUTOSCROLL_ACTIVE_OFFSET - (clientY - top)) /
+                -AUTOSCROLL_SPEED_RATIO
+            ),
+            -this.props.maxSpeed,
           );
         } else if (bottom - clientY < AUTOSCROLL_ACTIVE_OFFSET) {
-          scrollingSpeed = Math.round(
-            (AUTOSCROLL_ACTIVE_OFFSET - (bottom - clientY)) /
-              AUTOSCROLL_SPEED_RATIO
+          scrollingSpeed = Math.min(
+            Math.round(
+              (AUTOSCROLL_ACTIVE_OFFSET - (bottom - clientY)) /
+                AUTOSCROLL_SPEED_RATIO
+            ),
+            this.props.maxSpeed,
           );
         }
         if (this.state.scrollingSpeed !== scrollingSpeed) {

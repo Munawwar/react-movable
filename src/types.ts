@@ -40,6 +40,7 @@ export interface IProps<Value> {
     targetRect: ClientRect;
   }) => void;
   transitionDuration: number;
+  maxSpeed: number,
   removableByMove: boolean;
   lockVertically: boolean;
   voiceover: IVoiceover;

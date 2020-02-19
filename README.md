@@ -161,6 +161,14 @@ transitionDuration: number;
 
 The duration of CSS transitions. By default it's **300ms**. You can set it to 0 to disable all animations.
 
+### maxSpeed
+
+```ts
+maxSpeed: number;
+```
+
+The maximum drag speed for your list. The drag can get really fast quickly. One may prefer to limit this for small lists. By default there is no limit (Infinity).
+
 ### lockVertically
 
 ```ts
