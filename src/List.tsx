@@ -7,12 +7,14 @@ import {
   binarySearch,
   schd,
   isTouchEvent,
-  checkIfInteractive
+  checkIfInteractive,
+  calcDragZoneHeight,
+  calcSpeed,
 } from './utils';
 import { IItemProps, IProps, TEvent } from './types';
 
 const AUTOSCROLL_ACTIVE_OFFSET = 200;
-const AUTOSCROLL_SPEED_RATIO = 10;
+const AUTOSCROLL_MAX_SPEED = 20;
 
 class List<Value = string> extends React.Component<IProps<Value>> {
   listRef = React.createRef<HTMLElement>();
@@ -278,23 +280,29 @@ class List<Value = string> extends React.Component<IProps<Value>> {
     } = this.listRef.current!.getBoundingClientRect();
     const viewportHeight =
       window.innerHeight || document.documentElement.clientHeight;
+    const dragZoneHeight = calcDragZoneHeight(viewportHeight, AUTOSCROLL_ACTIVE_OFFSET);
     // autoscrolling for the window (down)
     if (
       bottom > viewportHeight &&
-      viewportHeight - clientY < AUTOSCROLL_ACTIVE_OFFSET
+      viewportHeight - clientY < dragZoneHeight
     ) {
+      const distanceFromBottomZoneLine = dragZoneHeight - (viewportHeight - clientY);
       this.setState({
-        scrollingSpeed: Math.round(
-          (AUTOSCROLL_ACTIVE_OFFSET - (viewportHeight - clientY)) /
-            AUTOSCROLL_SPEED_RATIO
+        scrollingSpeed: calcSpeed(
+          distanceFromBottomZoneLine,
+          dragZoneHeight,
+          AUTOSCROLL_MAX_SPEED,
         ),
         scrollWindow: true
       });
       // autoscrolling for the window (up)
-    } else if (top < 0 && clientY < AUTOSCROLL_ACTIVE_OFFSET) {
+    } else if (top < 0 && clientY < dragZoneHeight) {
+      const distanceFromTopZoneLine = dragZoneHeight - clientY;
       this.setState({
-        scrollingSpeed: Math.round(
-          (AUTOSCROLL_ACTIVE_OFFSET - clientY) / -AUTOSCROLL_SPEED_RATIO
+        scrollingSpeed: -calcSpeed(
+          distanceFromTopZoneLine,
+          dragZoneHeight,
+          AUTOSCROLL_MAX_SPEED,
         ),
         scrollWindow: true
       });
@@ -305,15 +313,19 @@ class List<Value = string> extends React.Component<IProps<Value>> {
       // autoscrolling for containers with overflow
       if (height + 20 < this.listRef.current!.scrollHeight) {
         let scrollingSpeed = 0;
-        if (clientY - top < AUTOSCROLL_ACTIVE_OFFSET) {
-          scrollingSpeed = Math.round(
-            (AUTOSCROLL_ACTIVE_OFFSET - (clientY - top)) /
-              -AUTOSCROLL_SPEED_RATIO
+        if (clientY - top < dragZoneHeight) {
+          const distanceFromTopZoneLine = dragZoneHeight - (clientY - top);
+          scrollingSpeed = -calcSpeed(
+            distanceFromTopZoneLine,
+            dragZoneHeight,
+            AUTOSCROLL_MAX_SPEED,
           );
-        } else if (bottom - clientY < AUTOSCROLL_ACTIVE_OFFSET) {
-          scrollingSpeed = Math.round(
-            (AUTOSCROLL_ACTIVE_OFFSET - (bottom - clientY)) /
-              AUTOSCROLL_SPEED_RATIO
+        } else if (bottom - clientY < dragZoneHeight) {
+          const distanceFromBottomZoneLine = dragZoneHeight - (bottom - clientY);
+          scrollingSpeed = calcSpeed(
+            distanceFromBottomZoneLine,
+            dragZoneHeight,
+            AUTOSCROLL_MAX_SPEED,
           );
         }
         if (this.state.scrollingSpeed !== scrollingSpeed) {

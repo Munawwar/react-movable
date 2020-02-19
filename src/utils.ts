@@ -129,3 +129,28 @@ export function checkIfInteractive(target: Element, rootElement: Element) {
   }
   return false;
 }
+
+// consider 20% area top and 20% area bottom of view port as drag zones.
+export const calcDragZoneHeight = (viewportHeight: number, maxSize: number) =>
+  Math.min(
+    Math.round( viewportHeight * 0.2),
+    maxSize,
+  );
+
+const scale = (x: number, i1: number, i2: number, o1: number, o2: number) => ((x - i1) / (i2 - i1)) * (o2 - o1) + o1;
+export const calcSpeed = (distance: number, maxDistance: number, maxSpeed: number) => {
+  // idea is to use the exponential curve e^x. whose range starts from 1 if x = 0
+  // first off, lets use exp func = e^x - 1 to make the range start from 0 when x = 0
+  // now, we need to cap exp func to maxSpeed
+  // so we need to find the value of x that would give us maxSpeed
+  // Math:
+  // e^xmax - 1 = maxSpeed
+  // => e^xmax = maxSpeed + 1
+  // => xmax = log(maxSpeed + 1)
+  const maxScale = Math.log(maxSpeed + 1);
+
+  // now that we got both ranges let's scale client Y from 0 - maxDistance range to 0 - maxSpeed
+  const cappedDistance = Math.min(distance, maxDistance);
+  const scaledDistance = scale(cappedDistance, 0, maxDistance, 0, maxScale);
+  return Math.round(Math.exp(scaledDistance) - 1);
+};
